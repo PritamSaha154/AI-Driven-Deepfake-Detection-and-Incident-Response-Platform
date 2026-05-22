@@ -1,0 +1,7 @@
+Pillow
+PyPDF2
+python-docx
+openpyxl
+pefile
+requests
+folium
