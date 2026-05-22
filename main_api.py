@@ -10,13 +10,22 @@ import os
 import piexif
 import hashlib
 
-app = FastAPI()
+app = FastAPI(title="AI-Driven Deepfake Detection & Incident Response API")
+
+# --- ENVIRONMENT CONFIGURATIONS ---
+# Moving these to environment variables makes deploying to servers like Render, AWS, or Docker clean and easy.
+# If no environment variables are present, they fallback safely to your local development defaults.
+CORS_ORIGINS_RAW = os.getenv("CORS_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000")
+ALLOWED_ORIGINS = [origin.strip() for origin in CORS_ORIGINS_RAW.split(",")]
+
+MODEL_PATH = os.getenv("MODEL_PATH", "ViT_Model/verifake_ViT_epoch_15.pth")
+SERVER_HOST = os.getenv("HOST", "0.0.0.0")
+SERVER_PORT = int(os.getenv("PORT", "8000"))
 
 # --- CORS CONFIGURATION ---
-# Replace localhost:3000 with your actual dev port if different
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -24,15 +33,17 @@ app.add_middleware(
 
 # --- AI MODEL SETUP ---
 device = torch.device("cpu")
+
 def load_model():
     model = models.vit_b_16()
     model.heads.head = nn.Linear(model.heads.head.in_features, 2)
-    MODEL_PATH = "ViT_Model/verifake_ViT_epoch_15.pth"
+    
     if os.path.exists(MODEL_PATH):
         model.load_state_dict(torch.load(MODEL_PATH, map_location=device))
-        print("SUCCESS: Forensic Weight File Loaded.")
+        print(f"SUCCESS: Forensic Weight File Loaded from '{MODEL_PATH}'.")
     else:
-        print("WARNING: Model path not found. Running with base weights.")
+        print(f"WARNING: Model path '{MODEL_PATH}' not found. Running with base weights.")
+        
     model.to(device)
     model.eval()
     return model
@@ -64,7 +75,8 @@ def deep_forensic_extract(image_bytes):
             lon = to_deg(exif_dict["GPS"][piexif.GPSIFD.GPSLongitude])
             if exif_dict["GPS"][piexif.GPSIFD.GPSLongitudeRef] == b"W": lon *= -1
             data["gps"] = {"lat": round(lat, 4), "lon": round(lon, 4)}
-    except: pass
+    except: 
+        pass
     return data
 
 # --- FIXED ROUTES ---
@@ -110,4 +122,4 @@ async def predict(file: UploadFile = File(...)):
         return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=SERVER_HOST, port=SERVER_PORT)
