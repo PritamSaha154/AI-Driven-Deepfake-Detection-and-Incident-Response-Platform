@@ -3,6 +3,15 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { ViewType, CaseRecord, User } from '@/types';
 import { currentUser, cases as mockCases } from '@/lib/mock-data';
 
+// Helper function for ISO / Forensic SOC Short-Date Format (e.g. "Jul 22, 15:04:32")
+const getFormattedLogTime = () => {
+  const now = new Date();
+  const month = now.toLocaleString('en-US', { month: 'short' });
+  const day = now.getDate();
+  const time = now.toLocaleTimeString('en-GB', { hour12: false }); // 24-hour time
+  return `${month} ${day}, ${time}`;
+};
+
 interface AppState {
   currentView: ViewType;
   setCurrentView: (view: ViewType) => void;
@@ -67,15 +76,13 @@ export const useAppStore = create<AppState>()(
       isAnalyzing: false,
       setIsAnalyzing: (analyzing) => set({ isAnalyzing: analyzing }),
       
-      // --- UPDATED HISTORY LOGIC ---
+      // --- HISTORY LOGIC ---
       historyCases: [], 
       addCaseToHistory: (caseRecord) => {
-        // Log the archival action with the final status for the audit trail
         const statusLabel = caseRecord.status.toUpperCase();
         get().addLog(`ARCHIVE_VAULT: Case ${caseRecord.caseId} committed to storage with status [${statusLabel}]`);
 
         set((state) => ({ 
-          // Prepend the new record to ensure it appears at the top of logs
           historyCases: [caseRecord, ...state.historyCases] 
         }));
       },
@@ -93,7 +100,7 @@ export const useAppStore = create<AppState>()(
         });
       },
 
-      // --- INCIDENT RESPONSE LOGIC IMPLEMENTATION ---
+      // --- INCIDENT RESPONSE LOGIC ---
       irProtocols: {
         hashCheck: true,
         sanitization: false,
@@ -106,11 +113,11 @@ export const useAppStore = create<AppState>()(
         get().addLog(`PROTOCOL_UPDATE: ${protocol.toUpperCase()} set to ${value}`);
       },
       systemLogs: [
-        `[${new Date().toLocaleTimeString()}] SOC_KERNEL: VeriFake Engine v4.2.1 Initialized`,
-        `[${new Date().toLocaleTimeString()}] NODE_SYNC: West Bengal Command Center Connected`
+        `[${getFormattedLogTime()}] SOC_KERNEL: VeriFake Engine 1.0.0 (Next.js 16.2 + PyTorch ViT) Initialized`,
+        `[${getFormattedLogTime()}] NODE_SYNC: West Bengal Command Center Connected`
       ],
       addLog: (message) => set((state) => ({
-        systemLogs: [`[${new Date().toLocaleTimeString()}] ${message}`, ...state.systemLogs].slice(0, 50)
+        systemLogs: [`[${getFormattedLogTime()}] ${message}`, ...state.systemLogs].slice(0, 50)
       })),
     }),
     {
@@ -121,7 +128,7 @@ export const useAppStore = create<AppState>()(
         sidebarOpen: state.sidebarOpen,
         irProtocols: state.irProtocols,
         systemLogs: state.systemLogs,
-        historyCases: state.historyCases // Ensure history persists across refreshes
+        historyCases: state.historyCases
       }),
     }
   )

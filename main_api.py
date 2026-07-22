@@ -122,4 +122,9 @@ async def predict(file: UploadFile = File(...)):
         return {"status": "error", "message": str(e)}
 
 if __name__ == "__main__":
-    uvicorn.run(app, host=SERVER_HOST, port=SERVER_PORT)
+    server_host = os.getenv("HOST", "0.0.0.0")
+    server_port = int(os.getenv("PORT", 8000))
+    
+    print(f"🚀 Starting Forensic API Node on {server_host}:{server_port}")
+    
+    uvicorn.run("main_api:app", host=server_host, port=server_port, reload=True)

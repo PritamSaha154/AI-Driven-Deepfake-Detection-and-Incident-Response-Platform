@@ -1,4 +1,13 @@
 {
+  "name": "ai-driven-deepfake-detection-platform",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "npm run dev --prefix download/deepfake-dashboard",
+    "build": "npm run build --prefix download/deepfake-dashboard",
+    "start": "npm run start --prefix download/deepfake-dashboard",
+    "lint": "npm run lint --prefix download/deepfake-dashboard"
+  },
   "dependencies": {
     "jspdf": "^4.2.1",
     "jspdf-autotable": "^5.0.8"

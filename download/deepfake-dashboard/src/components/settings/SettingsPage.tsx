@@ -105,7 +105,7 @@ export function SettingsPage() {
             <div className="p-5 rounded-2xl bg-gray-50 border border-gray-100 relative overflow-hidden">
               <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Lead Name</p>
               <p className="text-xl font-black text-gray-900">Pritam Saha</p>
-              <p className="text-xs text-red-600 font-mono mt-1 font-bold">UUID: BCA-BWU-23-154</p>
+              <p className="text-xs text-red-600 font-mono mt-1 font-bold">UUID: BCA-154</p>
               <div className="absolute top-0 right-0 p-2 opacity-5">
                 <Shield className="w-16 h-16" />
               </div>
@@ -114,7 +114,7 @@ export function SettingsPage() {
             <div className="flex justify-between items-center px-2">
               <span className="text-sm text-gray-500 font-semibold">SOC Permissions</span>
               <Badge variant="outline" className="border-red-200 text-red-700 bg-red-50 font-bold">
-                L7 Super-Admin
+                Project Lead
               </Badge>
             </div>
             
@@ -127,6 +127,27 @@ export function SettingsPage() {
             >
               <Key className="w-4 h-4 text-red-600" /> Rotate API Access Keys
             </Button>
+
+            {/* --- CORE TEAM START --- */}
+            <div className="mt-6 border-t border-slate-200 pt-5">
+              <p className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Investigation Unit</p>
+              <div className="flex flex-col space-y-2">
+                
+                <div className="bg-blue-50 px-3 py-2 rounded-md border border-blue-100">
+                  <span className="text-sm font-bold text-slate-800">Pritam Saha</span>
+                </div>
+                
+                <div className="bg-red-50 px-3 py-2 rounded-md border border-red-100">
+                  <span className="text-sm font-bold text-slate-800">Argha Raj</span>
+                </div>
+
+                <div className="bg-emerald-50 px-3 py-2 rounded-md border border-emerald-100">
+                  <span className="text-sm font-bold text-slate-800">Goursundar Ghosh</span>
+                </div>
+
+              </div>
+            </div>
+            {/* --- CORE TEAM END --- */}
           </CardContent>
         </Card>
 
@@ -196,7 +217,7 @@ export function SettingsPage() {
 
             <div className="flex items-center justify-between px-2">
               <span className="text-sm text-gray-600 font-bold">IR Core Version</span>
-              <span className="text-xs font-mono font-black text-gray-400">v4.2.1-stable</span>
+              <span className="text-xs font-mono font-black text-gray-400">Next.js 16.2</span>
             </div>
           </CardContent>
         </Card>

@@ -133,12 +133,19 @@ export function UploadPage() {
         </CardHeader>
         <CardContent className="pt-6">
           {!uploadedImage ? (
-            <div className="border-2 border-dashed rounded-2xl p-16 text-center bg-slate-50 hover:bg-slate-100 transition-all cursor-pointer border-slate-200">
+            <div className="border-2 border-dashed rounded-2xl p-16 text-center bg-slate-50 hover:bg-red-50/30 hover:border-red-400/60 transition-all duration-300 cursor-pointer border-slate-300 shadow-sm">
               <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && processFile(e.target.files[0])} className="hidden" id="file-up" />
               <label htmlFor="file-up" className="cursor-pointer block">
-                <FileImage className="w-20 h-20 mx-auto text-slate-300 mb-4" />
-                <p className="text-lg font-bold text-slate-600">Click to Upload Forensic Evidence</p>
-                <p className="text-xs text-slate-400 mt-2 font-mono uppercase tracking-widest tracking-tight">NIST COMPLIANT SCANNER ACTIVE</p>
+                <div className="p-4 bg-white rounded-full shadow-sm border border-slate-200 mb-4 inline-block text-red-600">
+                  <Upload className="w-10 h-10 mx-auto" />
+                </div>
+                <p className="text-xl font-bold text-slate-800">Click to Upload Forensic Evidence</p>
+                <p className="text-xs text-slate-600 mt-2 font-mono font-bold uppercase tracking-widest">
+                  NIST-800-115 COMPLIANT SCANNER ACTIVE
+                </p>
+                <span className="inline-block mt-6 text-[11px] font-mono font-bold text-slate-500 bg-slate-200/70 px-3 py-1.5 rounded-md">
+                  SUPPORTED FORMATS: PNG, JPG, JPEG, WEBP
+                </span>
               </label>
             </div>
           ) : (

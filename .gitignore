@@ -62,3 +62,7 @@ ViT_Model/*.pth
 # ...
 
 .next/
+
+# Python cache files
+__pycache__/
+*.pyc
