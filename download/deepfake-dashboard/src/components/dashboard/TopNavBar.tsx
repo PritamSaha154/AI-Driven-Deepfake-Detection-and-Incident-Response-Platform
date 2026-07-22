@@ -52,7 +52,8 @@ function TopNavBarComponent() {
         </div>
         <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
-                <p className="text-sm font-bold text-gray-800">{currentUser.name}</p>
+                {/* Explicitly hardcoded to Pritam Saha for the demo */}
+                <p className="text-sm font-bold text-gray-800">Pritam Saha</p>
                 <p className="text-[10px] text-gray-500 font-medium">BCA Lead Investigator</p>
             </div>
             <Avatar className="h-9 w-9 border-2 border-red-50 shadow-sm">

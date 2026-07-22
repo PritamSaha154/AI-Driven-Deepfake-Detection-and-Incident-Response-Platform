@@ -74,7 +74,7 @@ export function UploadPage() {
         addLog("IR_PROTOCOL: Sanitizing metadata headers as per security policy.");
       }
 
-      // --- CRITICAL FIX: PRE-CONSTRUCT RESULT OBJECT ---
+      // --- CRITICAL FIX: DYNAMIC METADATA MAPPING ---
       const finalResult: CaseRecord = {
         id: Date.now().toString(),
         caseId: `DF-2026-${Math.floor(1000 + Math.random() * 9000)}`,
@@ -83,16 +83,26 @@ export function UploadPage() {
         aiConfidence: data.ai_score || 0,
         riskLevel: (data.risk_level?.toUpperCase() as RiskLevel) || 'LOW',
         riskScore: data.ai_score || 0,
-        status: 'open', // Default
+        status: 'open', 
         createdAt: new Date(),
         updatedAt: new Date(),
         analystName: 'Pritam Saha',
         isDeepfake: data.prediction === 'FAKE',
         metadata: [
+          // Original EXIF Data
           { field: 'Software', value: data.forensics?.exif?.Software || 'Clean Trace', status: 'verified' },
           { field: 'GPS Location', value: data.forensics?.gps ? `${data.forensics.gps.lat}, ${data.forensics.gps.lon}` : 'N/A', status: data.forensics?.gps ? 'verified' : 'neutral' },
           { field: 'Device Info', value: `${data.forensics?.exif?.Make || ''} ${data.forensics?.exif?.Model || ''}`.trim() || 'Unknown', status: 'verified' },
-          { field: 'Capture Date', value: data.forensics?.exif?.DateTimeOriginal || 'Unknown', status: 'verified' }
+          { field: 'Capture Date', value: data.forensics?.exif?.DateTimeOriginal || 'Unknown', status: 'verified' },
+          
+          // NEW: Extended Structure & Hardware Data mapped directly from Python
+          { field: 'File Size', value: data.forensics?.file_info?.size_kb ? `${data.forensics.file_info.size_kb} KB` : 'N/A', status: 'verified' },
+          { field: 'Format', value: data.forensics?.file_info?.format || 'N/A', status: 'verified' },
+          { field: 'Resolution', value: data.forensics?.file_info?.dimensions || 'N/A', status: 'verified' },
+          { field: 'Megapixels', value: data.forensics?.file_info?.megapixels || 'N/A', status: 'verified' },
+          { field: 'Color Mode', value: data.forensics?.file_info?.color_mode || 'N/A', status: 'verified' },
+          { field: 'Lens Model', value: data.forensics?.exif?.LensModel || 'N/A', status: 'verified' },
+          { field: 'ISO', value: data.forensics?.exif?.ISO || 'N/A', status: 'verified' }
         ],
         hashInfo: { 
           sha256: data.hash, 
@@ -104,13 +114,11 @@ export function UploadPage() {
         recommendations: [data.incident_response, "Evidence logged in secure vault"]
       };
 
-      // --- APPLY IR LOCK LOGIC BEFORE DISPATCHING TO STORE ---
       if (irProtocols.autoLock && finalResult.aiConfidence > 85 && finalResult.isDeepfake) {
         addLog(`CRITICAL_LOCK: High-Risk Detected. Auto-Locking Case ${finalResult.caseId}...`);
         finalResult.status = 'locked';
       }
 
-      // Final dispatch with the potentially 'locked' object
       addLog(`VAULT_SYNC: Archiving Case ${finalResult.caseId} as status: ${finalResult.status.toUpperCase()}`);
       setAnalysisResult(finalResult);
       addCaseToHistory(finalResult);
@@ -178,7 +186,7 @@ export function UploadPage() {
                 <div className="flex justify-between items-center">
                   <div>
                     <p className="text-emerald-400 font-mono text-[10px] tracking-widest uppercase mb-1">Audit_Result_Authenticated</p>
-                    <CardTitle className="text-3xl font-black italic">VERIFAKE_SCAN_v4.2</CardTitle>
+                    <CardTitle className="text-3xl font-black italic">VERIFAKE_SCAN_v1.0</CardTitle>
                   </div>
                   <div className="flex flex-col items-end gap-2">
                     <Badge className={cn("text-xl px-6 py-2 border-none font-black shadow-lg", analysisResult.isDeepfake ? "bg-red-600" : "bg-emerald-500")}>

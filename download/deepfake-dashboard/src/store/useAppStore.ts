@@ -80,10 +80,13 @@ export const useAppStore = create<AppState>()(
       historyCases: [], 
       addCaseToHistory: (caseRecord) => {
         const statusLabel = caseRecord.status.toUpperCase();
-        get().addLog(`ARCHIVE_VAULT: Case ${caseRecord.caseId} committed to storage with status [${statusLabel}]`);
+        get().addLog(`ARCHIVE_VAULT: Case ${caseRecord.caseId} committed to append-only storage with status [${statusLabel}]`);
+
+        // ENFORCED IMMUTABILITY: Freeze the object in memory so no React component or script can ever alter its values
+        const lockedRecord = Object.freeze({ ...caseRecord });
 
         set((state) => ({ 
-          historyCases: [caseRecord, ...state.historyCases] 
+          historyCases: [lockedRecord, ...state.historyCases] 
         }));
       },
 

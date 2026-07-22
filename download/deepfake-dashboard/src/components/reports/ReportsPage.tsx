@@ -2,7 +2,7 @@
 
 import { 
   FileText, Download, ShieldCheck, ArrowLeft, Fingerprint, FileSearch, 
-  Database, Cpu, Clock, MapPin, ShieldAlert, Lock, AlertCircle
+  Database, Cpu, Clock, MapPin, ShieldAlert, Lock, AlertCircle, Image as ImageIcon
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,7 +10,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useAppStore } from '@/store/useAppStore';
 import { cn } from '@/lib/utils';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -22,6 +22,9 @@ export function ReportsPage() {
       const doc = new jsPDF();
       const redColor = [185, 28, 28];
       
+      const getPDFMeta = (field: string) => 
+        record.metadata?.find((m: any) => m.field === field)?.value || 'N/A';
+
       // Header Branding
       doc.setFillColor(redColor[0], redColor[1], redColor[2]);
       doc.rect(0, 0, 210, 45, 'F');
@@ -38,12 +41,29 @@ export function ReportsPage() {
         startY: 55,
         head: [['Forensic Layer', 'Technical Observation']],
         body: [
-          ["[LAYER 1] FILE SYSTEM", `Filename: ${record.imageName}\nSHA-256: ${record.hashInfo?.sha256}`],
-          ["[LAYER 2] HARDWARE", `Device: ${record.metadata?.find((m: any) => m.field === 'Device Info')?.value || 'Unknown'}`],
-          ["[LAYER 3] TIMESTAMPS", `Analysis: ${new Date(record.createdAt).toLocaleString()}\nCapture: ${record.metadata?.find((m: any) => m.field === 'Capture Date')?.value || 'N/A'}`],
-          ["[RESULT] AI VERDICT", `${record.isDeepfake ? "MANIPULATED" : "AUTHENTIC"} | Confidence: ${record.aiConfidence}%`]
+          [
+            "[LAYER 1] FILE SYSTEM", 
+            `Filename: ${record.imageName}\nSHA-256: ${record.hashInfo?.sha256}\nSize: ${getPDFMeta('File Size')} | Format: ${getPDFMeta('Format')}`
+          ],
+          [
+            "[LAYER 2] IMAGE STRUCTURE", 
+            `Dimensions: ${getPDFMeta('Resolution')} (${getPDFMeta('Megapixels')})\nColor Space: ${getPDFMeta('Color Mode')}`
+          ],
+          [
+            "[LAYER 3] HARDWARE ORIGIN", 
+            `Device: ${getPDFMeta('Device Info')}\nSoftware: ${getPDFMeta('Software')}\nLens/ISO: ${getPDFMeta('Lens Model')} | ISO ${getPDFMeta('ISO')}`
+          ],
+          [
+            "[LAYER 4] TIMESTAMPS & GEOLOCATION", 
+            `Analysis Date: ${new Date(record.createdAt).toLocaleString()}\nCapture Date: ${getPDFMeta('Capture Date')}\nGPS Coordinates: ${getPDFMeta('GPS Location')}`
+          ],
+          [
+            "[RESULT] AI FORENSIC VERDICT", 
+            `Status: ${record.isDeepfake ? "MANIPULATED (FAKE)" : "AUTHENTIC (REAL)"}\nConfidence: ${record.aiConfidence}%\nInvestigator: Pritam Saha`
+          ]
         ],
-        headStyles: { fillColor: redColor },
+        headStyles: { fillColor: [185, 28, 28] },
+        styles: { fontSize: 9, cellPadding: 4 },
         theme: 'grid'
       });
 
@@ -83,21 +103,33 @@ export function ReportsPage() {
           </CardHeader>
 
           <CardContent className="p-8 space-y-8">
-            {/* Technical Metadata Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Extended Technical Metadata Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+               <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
+                  <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                    <ImageIcon className="w-3 h-3" /> Image Structure
+                  </h4>
+                  <p className="text-lg font-bold text-slate-900">{getMeta('Resolution')}</p>
+                  <p className="text-xs text-slate-500 font-mono">Format: {getMeta('Format')} • {getMeta('Megapixels')}</p>
+                  <p className="text-xs text-slate-500 font-mono">Size: {getMeta('File Size')} • Color: {getMeta('Color Mode')}</p>
+               </div>
+
                <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
                     <Database className="w-3 h-3" /> Hardware Origin
                   </h4>
                   <p className="text-lg font-bold text-slate-900">{getMeta('Device Info')}</p>
-                  <p className="text-xs text-slate-500 font-mono">Software Trace: {getMeta('Software')}</p>
+                  <p className="text-xs text-slate-500 font-mono">Software: {getMeta('Software')}</p>
+                  <p className="text-xs text-slate-500 font-mono">Lens: {getMeta('Lens Model')}</p>
                </div>
+
                <div className="p-6 rounded-2xl bg-slate-50 border border-slate-100 space-y-2">
                   <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                    <MapPin className="w-3 h-3" /> Geolocation
+                    <MapPin className="w-3 h-3" /> Geolocation & Time
                   </h4>
-                  <p className="text-lg font-bold text-slate-900">{getMeta('GPS Location') !== 'N/A' ? getMeta('GPS Location') : 'No GPS Data Extracted'}</p>
-                  <p className="text-xs text-slate-500 font-mono">Capture Time: {getMeta('Capture Date')}</p>
+                  <p className="text-lg font-bold text-slate-900">{getMeta('GPS Location') !== 'N/A' ? getMeta('GPS Location') : 'No GPS Extracted'}</p>
+                  <p className="text-xs text-slate-500 font-mono">Captured: {getMeta('Capture Date')}</p>
+                  <p className="text-xs text-slate-500 font-mono">Analyzed: {new Date(selectedCase.createdAt).toLocaleString()}</p>
                </div>
             </div>
 
@@ -114,30 +146,15 @@ export function ReportsPage() {
               </p>
             </div>
 
-            {/* SECURED DOWNLOAD BUTTON */}
+            {/* SECURED DOWNLOAD BUTTON - NOW UNLOCKED */}
             <div className="space-y-4">
               <Button 
-                className={cn(
-                  "w-full h-20 text-white text-xl font-black rounded-2xl gap-4 shadow-2xl transition-all",
-                  isLocked 
-                    ? "bg-slate-400 cursor-not-allowed grayscale" 
-                    : "bg-slate-900 hover:bg-black active:scale-95"
-                )}
-                onClick={() => !isLocked && generatePDF(selectedCase)}
-                disabled={isLocked}
+                className="w-full h-20 text-white text-xl font-black rounded-2xl gap-4 shadow-2xl transition-all bg-slate-900 hover:bg-black active:scale-95"
+                onClick={() => generatePDF(selectedCase)}
               >
-                {isLocked ? <Lock className="w-6 h-6" /> : <Download className="w-6 h-6" />}
-                {isLocked ? "EXPORT RESTRICTED: ASSET LOCKED" : "DOWNLOAD OFFICIAL FORENSIC DOSSIER"}
+                <Download className="w-6 h-6" />
+                DOWNLOAD OFFICIAL FORENSIC DOSSIER
               </Button>
-
-              {isLocked && (
-                <div className="flex items-center justify-center gap-2 p-3 bg-red-50 border border-red-100 rounded-xl text-red-600 animate-pulse">
-                  <ShieldAlert className="w-4 h-4" />
-                  <p className="text-[10px] font-mono font-bold uppercase tracking-tight">
-                    Security Policy: Evidence containment active. PDF generation restricted for Critical Risk level.
-                  </p>
-                </div>
-              )}
             </div>
           </CardContent>
         </Card>
